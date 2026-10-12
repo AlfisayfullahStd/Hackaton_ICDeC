@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIICES - FPGA ECG Core Controller & Classifier</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts: Plus Jakarta Sans, Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: linear-gradient(135deg, #0947c8 0%, #0637a0 100%);
+    }
+    .font-display { font-family: 'Outfit', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* PCB Circuit Pattern */
+    .pcb-pattern {
+      background-image: 
+        radial-gradient(circle, rgba(255, 255, 255, 0.4) 2px, transparent 2px),
+        linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+      background-size: 20px 20px, 40px 40px, 40px 40px;
+    }
+
+    /* Hero Card Shadows */
+    .hero-card-glow {
+      background: linear-gradient(145deg, #0d59eb 0%, #0742b6 100%);
+      box-shadow: 0 20px 45px -12px rgba(5, 45, 130, 0.45);
+    }
+    .smooth-shadow {
+      box-shadow: 0 14px 35px -8px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+    }
+
+    /* SLIDING PILL ANIMATION (CUBIC-BEZIER SPRING SLIDE) */
+    .sliding-pill-indicator {
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    
+    /* Interactive Card Transitions */
+    .hover-lift {
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .hover-lift:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 30px -10px rgba(10, 82, 221, 0.15);
+    }
+  </style>
+</head>
+<body class="min-h-screen p-3 md:p-6 lg:p-8 flex items-center justify-center text-slate-800">
+
+  <!-- MAIN BENTO CONTAINER (Rounded White Shell) -->
+  <main class="w-full max-w-[1440px] bg-[#fbfdfe] rounded-[36px] md:rounded-[46px] p-4 md:p-8 shadow-2xl relative overflow-hidden border border-white/60">
+    
+    <!-- ============================================================== -->
+    <!-- TOP HEADER / BRANDING & HARDWARE CONNECTION NOTCH               -->
+    <!-- ============================================================== -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-5 md:mb-6 px-1">
+      
+      <!-- LOGO KOMUNITAS DIICES (EXACT USER SVG) -->
+      <div class="flex items-center gap-3.5">
+        <div class="w-13 h-13 md:w-14 md:h-14 bg-white rounded-2xl flex items-center justify-center shadow-md p-1 border border-slate-200 overflow-hidden shrink-0">
+          <svg viewBox="0 0 514 515" class="w-full h-full" version="1.1" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 0 C169.62 0 339.24 0 514 0 C514 169.95 514 339.9 514 515 C344.38 515 174.76 515 0 515 C0 345.05 0 175.1 0 0 Z " fill="#ffffff"/>
+            <path d="M0 0 C169.62 0 339.24 0 514 0 C514 169.95 514 339.9 514 515 C344.38 515 174.76 515 0 515 C0 345.05 0 175.1 0 0 Z M212 31 C210.37 31.26 208.73 31.51 207.1 31.76 C199.79 32.94 192.98 34.57 186 37 C184.45 37.51 182.91 38.03 181.36 38.54 C180.6 38.79 179.84 39.04 179.05 39.3 C177.5 39.81 175.95 40.33 174.4 40.84 C170.55 42.12 166.75 43.43 163 45 C163 45.66 163 46.32 163 47 C161.87 47.12 160.73 47.25 159.56 47.38 C158.39 47.58 157.21 47.79 156 48 C155.67 48.66 155.34 49.32 155 50 C153.28 50.75 153.28 50.75 150.94 51.56 C132.02 58.93 115.09 71.72 100.48 85.63 C98.4 87.62 96.28 89.47 94.06 91.31 C74.65 108.17 54.8 133.15 45.95 157.5 C44.83 160.46 43.49 163.27 42.12 166.12 C37.19 176.71 33.04 187.72 30 199 C29.76 199.87 29.51 200.74 29.26 201.64 C27.63 207.75 26.42 213.89 25.38 220.12 C25.25 220.85 25.13 221.58 25 222.33 C23.56 231.21 22.84 240.02 22.8 249.01 C22.79 249.93 22.78 250.86 22.78 251.81 C22.76 254.77 22.75 257.73 22.75 260.69 C22.75 261.7 22.75 262.7 22.75 263.74 C22.76 284.46 23.26 306.14 31.07 325.68 C31.94 327.84 32.41 329.77 32.81 332.06 C34.07 338.03 36.58 343.42 39 349 C39.98 351.45 40.95 353.9 41.91 356.36 C44.74 363.22 47.81 369.75 51.62 376.12 C52.06 376.85 52.49 377.58 52.94 378.34 C63.3 395.6 75.03 411.47 89 426 C89.52 426.54 90.04 427.08 90.57 427.64 C97.64 434.96 104.87 441.85 113 448 C113.58 448.44 114.16 448.88 114.76 449.34 C129.99 460.79 146.54 470.38 164 478 C165.19 478.52 166.39 479.05 167.62 479.59 C182.31 485.67 197.5 489.64 213.06 492.81 C214.58 493.12 214.58 493.12 216.12 493.44 C228.47 495.85 240.78 496.23 253.31 496.25 C254.05 496.25 254.79 496.25 255.55 496.26 C270.5 496.26 285.74 495.84 300 491 C302.65 490.53 305.28 490.09 307.94 489.69 C316.33 488.31 323.98 485.87 332 483 C335.2 481.99 338.4 480.98 341.61 479.99 C344.09 478.96 345.15 477.89 347 476 C349.16 475.15 351.32 474.56 353.55 473.94 C356.04 472.99 358.04 471.72 360.22 470.21 C362.31 468.79 364.45 467.49 366.62 466.19 C399.54 446.27 435.38 418.09 452.38 382.38 C453.94 379.13 455.51 377.49 458 375 C458 373.68 458 372.36 458 371 C458.66 371 459.32 371 460 371 C463.17 364.28 466.02 357.51 468.59 350.53 C469.77 347.58 471.06 344.78 472.43 341.93 C475.29 335.69 477.01 329.32 478.69 322.69 C479.27 320.42 479.86 318.15 480.45 315.89 C480.83 314.4 480.83 314.4 481.21 312.89 C481.76 310.88 482.38 308.89 483.04 306.92 C490.03 285.58 487.31 260.13 487 238 C486.34 238 485.68 238 485 238 C484.95 237.16 484.9 236.33 484.85 235.46 C484.61 231.64 484.31 227.82 484 224 C483.87 222.3 483.87 222.3 483.73 220.57 C480.81 192.47 468.31 163.4 453.14 139.8 C451.9 137.85 450.72 135.87 449.54 133.89 C445.3 126.84 441.03 120.37 435.3 114.41 C433.37 112.39 431.54 110.33 429.71 108.21 C426.05 104 422.2 100.01 418.25 96.06 C417.55 95.36 416.85 94.67 416.13 93.95 C410.69 88.57 405.05 83.7 399 79 C398.27 78.37 397.53 77.75 396.77 77.11 C391.21 72.41 385.26 68.46 379.12 64.56 C377.87 63.76 377.87 63.76 376.6 62.95 C375.81 62.45 375.01 61.95 374.2 61.44 C373.48 60.99 372.77 60.55 372.04 60.09 C370.02 59.01 368.24 58.45 366 58 C366 57.34 366 56.68 366 56 C359.74 52.81 353.45 49.78 347 47 C346.13 46.62 345.26 46.24 344.37 45.85 C337.15 42.77 329.88 40.21 322.38 37.94 C321.24 37.59 320.11 37.25 318.95 36.89 C309.73 34.13 300.49 31.66 291 30 C290.03 29.82 289.07 29.65 288.07 29.47 C277.75 27.77 267.57 27.65 257.12 27.69 C256.22 27.69 255.32 27.69 254.39 27.69 C240.06 27.73 226.14 28.57 212 31 Z " fill="#F9F9F9"/>
+            <path d="M0 0 C2.65 -0.01 5.3 -0.04 7.96 -0.07 C39.43 -0.27 71.69 8.06 99.75 22.24 C101.81 23.19 103.87 24.12 105.94 25.05 C110.54 27.13 110.54 27.13 112.75 28.24 C112.75 28.9 112.75 29.56 112.75 30.24 C113.54 30.44 114.32 30.64 115.13 30.84 C120.14 32.77 124.31 35.62 128.75 38.62 C129.68 39.24 130.61 39.86 131.57 40.51 C138.93 45.52 145.74 50.93 152.31 56.93 C153.62 58.12 154.96 59.29 156.3 60.46 C171.56 73.83 184.99 88.21 195.67 105.49 C196.71 107.17 197.76 108.83 198.81 110.49 C217.24 139.82 232.34 175.02 231.75 210.24 C232.41 210.24 233.07 210.24 233.75 210.24 C234.55 267 234.55 267 227.01 288.54 C225.66 292.51 224.69 296.47 223.75 300.55 C222.41 306.21 220.6 311.31 218.04 316.53 C216.6 319.55 215.42 322.61 214.25 325.74 C212 331.7 209.46 337.48 206.75 343.24 C206.09 343.24 205.43 343.24 204.75 343.24 C204.65 344.19 204.55 345.14 204.44 346.12 C203.75 349.24 203.75 349.24 200.75 351.24 C199.5 353.34 199.5 353.34 198.31 355.87 C194.04 363.98 188.38 371.04 182.75 378.24 C182 379.21 181.24 380.18 180.47 381.18 C163 403.09 142.37 420.75 118.43 435.21 C116.18 436.59 114 438.06 111.81 439.55 C105.73 443.65 99.76 447.01 92.75 449.24 C91.97 449.71 91.2 450.19 90.39 450.68 C86.09 453.22 81.42 454.61 76.69 456.18 C75.63 456.53 74.57 456.88 73.48 457.25 C64.43 460.18 55.37 462.24 46 463.84 C43.72 464.25 41.45 464.73 39.18 465.22 C26.45 467.75 13.9 468.59 0.94 468.49 C0.2 468.49 -0.54 468.48 -1.31 468.48 C-30.84 468.32 -62.09 463.95 -88.59 450.09 C-90.55 449.09 -92.54 448.34 -94.62 447.62 C-118.82 438.1 -140.66 421.11 -159.25 403.24 C-159.8 402.72 -160.34 402.2 -160.91 401.67 C-169.19 393.77 -176.43 385.42 -183.25 376.24 C-183.88 375.41 -183.88 375.41 -184.52 374.57 C-191.55 365.26 -197.39 355.4 -203.06 345.22 C-204.23 343.18 -204.23 343.18 -205.81 341.21 C-208.01 338.2 -209.02 334.73 -210.25 331.24 C-210.9 329.49 -211.56 327.75 -212.22 326.01 C-212.73 324.65 -212.73 324.65 -213.26 323.27 C-213.61 322.35 -213.95 321.43 -214.31 320.49 C-214.66 319.56 -215.01 318.63 -215.38 317.67 C-215.72 316.77 -216.06 315.87 -216.41 314.94 C-216.71 314.14 -217.02 313.33 -217.33 312.5 C-218.21 310.35 -219.21 308.31 -220.25 306.24 C-220.58 304.92 -220.87 303.58 -221.12 302.24 C-221.86 298.63 -222.91 295.32 -224.19 291.87 C-229.11 277.53 -230.37 261.3 -230.45 246.23 C-230.46 245.31 -230.47 244.38 -230.47 243.43 C-230.49 240.47 -230.5 237.51 -230.5 234.55 C-230.5 233.54 -230.5 232.54 -230.5 231.5 C-230.5 216.84 -230.02 202.67 -227.25 188.24 C-226.99 186.77 -226.74 185.3 -226.49 183.83 C-225.33 177.34 -223.73 171.35 -221.25 165.24 C-220.75 163.62 -220.28 161.99 -219.81 160.37 C-217.63 152.95 -214.71 145.97 -211.18 139.1 C-209.43 135.61 -207.95 131.99 -206.49 128.37 C-198.07 108.35 -185.15 90.86 -170.25 75.24 C-169.14 73.93 -168.03 72.62 -166.94 71.3 C-158.14 61.21 -147.65 52.56 -136.98 44.54 C-135.84 43.68 -134.71 42.82 -133.58 41.96 C-124 34.6 -111.97 25.44 -100.06 22.74 C-99.46 22.58 -98.86 22.41 -98.25 22.24 C-97.92 21.58 -97.59 20.92 -97.25 20.24 C-94.93 19.83 -92.59 19.5 -90.25 19.24 C-90.25 18.58 -90.25 17.92 -90.25 17.24 C-89.1 16.84 -87.96 16.44 -86.78 16.03 C-85.25 15.5 -83.72 14.96 -82.19 14.43 C-81.43 14.17 -80.68 13.91 -79.91 13.64 C-76.43 12.42 -73.04 11.15 -69.67 9.67 C-66.04 8.15 -62.44 7.12 -58.62 6.24 C-57.9 6.07 -57.18 5.91 -56.44 5.73 C-47.14 3.66 -37.7 2.36 -28.25 1.24 C-27.07 1.09 -27.07 1.09 -25.87 0.95 C-17.27 0.01 -8.64 0.02 0 0 Z M-42.25 23.24 C-43.85 23.54 -45.45 23.81 -47.06 24.05 C-52.3 24.97 -57.14 26.42 -62.15 28.18 C-65.32 29.26 -68.52 30.15 -71.75 31.05 C-77.48 32.79 -82.17 35.35 -87.25 38.5 C-91.26 40.82 -95.43 42.47 -99.75 44.1 C-102.22 45.23 -103.43 46.3 -105.25 48.24 C-106.22 48.63 -107.19 49.02 -108.19 49.43 C-139.03 61.96 -172.11 99.55 -186.25 129.24 C-186.72 130.5 -187.18 131.78 -187.62 133.05 C-188.86 136.62 -190.63 139.59 -192.62 142.8 C-196.74 149.66 -198.94 156.62 -201.25 164.24 C-201.56 165.17 -201.87 166.09 -202.19 167.05 C-214.34 203.74 -216.69 243.67 -207.25 281.24 C-207 282.25 -206.76 283.27 -206.5 284.31 C-203.88 294.99 -200.87 305.24 -196.25 315.24 C-195.33 317.33 -194.42 319.42 -193.5 321.51 C-192.61 323.57 -191.7 325.62 -190.8 327.67 C-189.56 330.51 -188.38 333.36 -187.25 336.24 C-186.59 336.24 -185.93 336.24 -185.25 336.24 C-185.01 337.08 -184.77 337.91 -184.53 338.77 C-183.05 342.79 -181.1 346.14 -178.81 349.74 C-178.37 350.44 -177.93 351.14 -177.47 351.85 C-169.64 364.04 -160.26 374.81 -150.25 385.24 C-149.76 385.76 -149.27 386.28 -148.76 386.81 C-123.23 413.68 -87.9 434.03 -51.77 442.38 C-48.25 443.24 -48.25 443.24 -45.17 444.28 C-33.54 448.09 -20.38 447.86 -8.25 448.24 C-7.42 448.27 -6.6 448.31 -5.75 448.34 C20.91 449.38 46.89 445.97 71.75 436.24 C73.34 435.65 74.93 435.07 76.53 434.49 C82.68 432.25 88.74 429.85 94.75 427.24 C94.75 426.58 94.75 425.92 94.75 425.24 C95.61 424.98 96.46 424.72 97.35 424.46 C113.83 418.56 128.24 406.02 141.18 394.6 C142.75 393.24 144.35 391.92 145.95 390.61 C148.22 388.69 150.11 386.88 152 384.62 C154.78 381.35 157.64 378.19 160.56 375.05 C169.36 365.36 176.65 355.14 183.43 343.97 C185 341.39 186.67 338.93 188.45 336.49 C190.55 333.53 191.73 330.92 192.88 327.51 C193.92 324.79 195.26 322.31 196.63 319.74 C199.12 314.85 200.99 309.97 202.63 304.74 C202.84 304.06 203.06 303.38 203.28 302.67 C204.28 299.34 204.75 296.76 204.75 293.24 C205.41 293.24 206.07 293.24 206.75 293.24 C208.95 285.51 210.48 277.71 211.88 269.8 C212.05 268.86 212.22 267.92 212.39 266.95 C217.73 236.16 215.38 204.2 206.75 174.24 C206.09 174.24 205.43 174.24 204.75 174.24 C204.67 173.61 204.58 172.98 204.49 172.33 C199.69 141.79 180.42 112.48 159.65 90.32 C157.75 88.24 157.75 88.24 155.73 85.68 C153.97 83.51 152.25 81.78 150.13 79.99 C147.08 77.39 144.12 74.72 141.19 71.99 C120.91 53.3 120.91 53.3 96.75 43.24 C96.75 42.58 96.75 41.92 96.75 41.24 C95.6 40.83 94.44 40.42 93.25 39.99 C90.42 38.98 87.91 37.8 85.24 36.38 C79.86 33.66 74.18 31.96 68.44 30.18 C67.38 29.84 66.31 29.5 65.21 29.15 C62.07 28.16 58.91 27.19 55.75 26.24 C54.51 25.86 54.51 25.86 53.25 25.47 C36.64 20.61 20.35 18.59 3.08 18.77 C0.06 18.8 -2.96 18.79 -5.98 18.78 C-25.12 17.76 -25.12 17.76 -42.25 23.24 Z " fill="#228AC8" transform="translate(253.248291015625,27.759765625)"/>
+            <path d="M0 0 C2.07 -0.06 4.14 -0.11 6.21 -0.14 C7.36 -0.17 8.51 -0.2 9.7 -0.23 C14.38 0.09 17.59 1.83 21 5 C23.38 8.57 23.29 11.1 23.29 15.22 C23.29 15.96 23.3 16.7 23.31 17.46 C23.33 19.95 23.33 22.43 23.34 24.92 C23.35 26.7 23.36 28.48 23.37 30.26 C23.4 35.11 23.42 39.95 23.43 44.79 C23.44 47.82 23.45 50.84 23.46 53.87 C23.5 63.34 23.52 72.81 23.53 82.28 C23.55 93.21 23.59 104.13 23.66 115.06 C23.71 123.51 23.74 131.96 23.74 140.41 C23.74 145.45 23.76 150.5 23.8 155.54 C23.84 160.29 23.85 165.04 23.83 169.78 C23.83 171.52 23.84 173.26 23.86 175 C24.05 189.77 24.05 189.77 19.71 195.05 C17.18 197.5 15.32 198.43 11.82 198.78 C10.4 198.73 8.98 198.63 7.56 198.5 C6.83 198.46 6.1 198.43 5.35 198.39 C3.56 198.3 1.78 198.15 0 198 C0.03 196.79 0.07 195.58 0.1 194.33 C0.2 189.79 0.23 185.26 0.23 180.71 C0.24 178.76 0.28 176.8 0.33 174.85 C0.93 161.56 0.93 161.56 -5.28 150.37 C-7.75 148.09 -10.35 146.06 -13 144 C-17.19 137.72 -16.38 127.26 -15 120 C-12.54 116.31 -9.88 114.95 -6 113 C-1.09 108.68 -0.24 104.49 0.38 98.06 C0.21 93.4 -1.22 89.73 -4 86 C-9.56 80.85 -14.09 78.74 -21.66 78.85 C-27.47 79.23 -31.92 80.81 -36 85 C-40.03 91.4 -39.91 98.64 -39 106 C-37.05 111.21 -33.68 115 -29 118 C-27.68 118.37 -26.34 118.71 -25 119 C-25.06 120.11 -25.06 120.11 -25.13 121.24 C-26.39 135.23 -26.39 135.23 -22.58 148.17 C-20.23 150.43 -17.66 152.39 -15.06 154.35 C-10.79 158.26 -9.59 161.67 -9.34 167.29 C-9.31 171.37 -9.42 175.43 -9.57 179.5 C-9.6 181.2 -9.63 182.9 -9.66 184.6 C-9.74 188.73 -9.86 192.87 -10 197 C-29.96 197.21 -49.92 197.37 -69.87 197.47 C-79.14 197.51 -88.41 197.58 -97.68 197.68 C-105.75 197.77 -113.83 197.83 -121.91 197.85 C-126.19 197.86 -130.46 197.89 -134.74 197.95 C-138.77 198.01 -142.79 198.03 -146.82 198.02 C-148.3 198.02 -149.77 198.04 -151.25 198.07 C-161.95 198.31 -161.95 198.31 -166.47 195.42 C-172.81 188.6 -171 183.89 -171 174 C-154.83 174 -138.66 174 -122 174 C-122 173.34 -122 172.68 -122 172 C-120.46 170.41 -120.46 170.41 -118.38 168.62 C-117.37 167.75 -117.37 167.75 -116.34 166.85 C-115.18 165.94 -115.18 165.94 -114 165 C-112.82 163.91 -112.82 163.91 -111.62 162.79 C-106.47 159.42 -99.5 160.6 -93.62 160.75 C-92.32 160.77 -91.01 160.79 -89.66 160.8 C-86.44 160.85 -83.22 160.92 -80 161 C-79.5 162.04 -79.5 162.04 -79 163.1 C-78.56 164 -78.11 164.91 -77.66 165.84 C-77.23 166.74 -76.79 167.64 -76.34 168.56 C-74.38 172.13 -72.07 174.35 -68.16 175.58 C-61.22 176.93 -54.99 176.5 -49 172.74 C-44.36 169.57 -42.38 167.62 -41 162 C-40.4 156.24 -40.14 150.89 -42.56 145.56 C-49.26 138.43 -49.26 138.43 -58.37 135.8 C-65.48 135.66 -69.9 136.89 -75.19 141.81 C-77.92 144.5 -79.32 147.57 -81 151 C-81.94 150.97 -82.87 150.93 -83.84 150.9 C-87.37 150.81 -90.9 150.77 -94.44 150.77 C-95.96 150.76 -97.48 150.72 -99 150.67 C-107.74 150.09 -107.74 150.09 -115.55 153.23 C-116.98 154.78 -118.31 156.38 -119.62 158.03 C-123.05 162.23 -125.66 164.31 -131.14 164.99 C-137.19 165.33 -143.21 165.05 -149.25 164.75 C-151.36 164.69 -153.48 164.63 -155.59 164.59 C-160.73 164.46 -165.85 164.23 -171 164 C-171 151.79 -171 139.58 -171 127 C-168.37 127.06 -165.74 127.13 -163.02 127.19 C-154.26 127.39 -145.5 127.49 -136.73 127.54 C-131.42 127.57 -126.12 127.64 -120.81 127.79 C-94.55 129.76 -94.55 129.76 -71.61 119.64 C-68.86 116.58 -66.45 113.47 -64.27 109.97 C-63 108 -63 108 -60.6 105.71 C-58.79 104.12 -58.79 104.12 -58.76 101.83 C-58.86 101.05 -58.96 100.27 -59.06 99.46 C-59.83 89.51 -59.12 81.79 -52.81 73.71 C-45.5 65.73 -38.94 62.18 -28.26 61.49 C-21.85 61.24 -15.46 61.47 -9.07 61.9 C-5.96 62.18 -5.96 62.18 -3 61 C-0.84 57.85 -0.73 55.07 -0.68 51.31 C-0.66 50.17 -0.64 49.03 -0.62 47.86 C-0.61 46.63 -0.6 45.4 -0.59 44.14 C-0.57 42.88 -0.55 41.62 -0.53 40.32 C-0.48 36.98 -0.44 33.64 -0.4 30.3 C-0.36 26.89 -0.31 23.48 -0.26 20.07 C-0.16 13.38 -0.08 6.69 0 0 Z " fill="#1E8DC9" transform="translate(332,160)"/>
+            <path d="M0 0 C11.88 0 23.76 0 36 0 C36.17 3.98 36.33 7.96 36.5 12.06 C36.57 13.3 36.65 14.55 36.72 15.82 C36.88 23.84 36.88 23.84 34.31 27.23 C32.29 28.97 30.21 30.49 28 32 C26.75 33.34 25.53 34.71 24.38 36.12 C21.52 39.5 18.4 42.17 15 45 C13.22 46.94 11.51 48.93 9.81 50.94 C7.46 53.61 4.94 56.08 2.38 58.55 C0.89 59.97 0.89 59.97 0 62 C-0.97 61.84 -1.94 61.67 -2.94 61.5 C-11.33 60.33 -18.98 60.3 -26.25 65.19 C-31.82 70.89 -32.33 75.76 -32.3 83.45 C-31.99 86.1 -31.2 87.66 -30 90 C-30 91.32 -30 92.64 -30 94 C-29.44 94.25 -28.89 94.5 -28.31 94.75 C-26 96 -26 96 -23.5 98.06 C-19.35 101.28 -14.82 101.53 -9.66 101.47 C-4.67 100.59 -1.51 97.48 2 94 C2.55 93.49 3.1 92.99 3.67 92.47 C7.99 87.71 7.45 82.35 7.27 76.21 C7.14 73.16 7.14 73.16 6.34 70.98 C6.23 70.33 6.12 69.67 6 69 C7.79 66.64 9.55 64.66 11.62 62.56 C12.24 61.93 12.85 61.29 13.47 60.64 C20.2 53.68 27.09 46.86 33.98 40.06 C34.84 39.2 35.71 38.34 36.61 37.46 C37.38 36.69 38.16 35.93 38.95 35.14 C43.17 30.73 44.37 28.52 44.51 22.27 C44.56 20.51 44.56 20.51 44.61 18.73 C44.64 17.25 44.66 15.77 44.69 14.25 C44.79 9.55 44.89 4.84 45 0 C56.88 0 68.76 0 81 0 C81 17.49 81 34.98 81 53 C76.05 52.67 71.1 52.34 66 52 C53.42 51.91 44.7 54.18 35.55 63.09 C28.94 69.89 22.87 76.34 22.92 86.37 C23.01 88.19 23.11 90 23.27 91.81 C23.64 99.14 22.13 103.62 17.22 109.09 C9.63 117.01 1.78 118.23 -8.68 118.61 C-17.32 118.75 -25.94 118.5 -34.57 118.17 C-39.58 117.99 -44.6 117.92 -49.62 117.83 C-59.41 117.65 -69.21 117.35 -79 117 C-79 105.12 -79 93.24 -79 81 C-65.31 80.81 -65.31 80.81 -61.02 80.79 C-59.33 80.75 -59.33 80.75 -57.61 80.71 C-55.89 80.68 -55.89 80.68 -54.14 80.66 C-49.91 79.77 -48.49 78.51 -46 75 C-45.3 72.06 -45.28 69.21 -45.29 66.2 C-45.28 65.36 -45.26 64.53 -45.25 63.66 C-45.2 61.01 -45.2 58.35 -45.19 55.69 C-45.16 53.88 -45.14 52.07 -45.11 50.26 C-45.05 45.84 -45.02 41.42 -45 37 C-43.27 36.99 -43.27 36.99 -41.5 36.97 C-37.2 36.93 -32.91 36.87 -28.61 36.79 C-26.75 36.76 -24.9 36.74 -23.04 36.73 C-20.37 36.71 -17.69 36.66 -15.02 36.61 C-14.19 36.61 -13.36 36.61 -12.51 36.61 C-8.72 36.51 -6.39 36.2 -2.98 34.42 C-0.26 31.09 -0.34 28.88 -0.29 24.61 C-0.26 23.32 -0.24 22.03 -0.21 20.7 C-0.2 18.25 -0.2 18.25 -0.19 15.75 C-0.13 10.55 -0.06 5.35 0 0 Z " fill="#208EC9" transform="translate(241,160)"/>
+            <path d="M0 0 C1.26 0 2.52 0 3.82 0 C5.2 0.01 6.58 0.01 7.97 0.02 C9.38 0.02 10.79 0.02 12.2 0.02 C15.91 0.02 19.62 0.03 23.33 0.04 C27.12 0.06 30.91 0.06 34.69 0.06 C42.13 0.08 49.56 0.09 56.99 0.11 C56.99 8.69 56.99 17.27 56.99 26.11 C52.96 26.17 52.96 26.17 48.85 26.23 C46.24 26.27 43.64 26.32 41.03 26.38 C39.22 26.41 37.41 26.44 35.6 26.46 C33 26.49 30.39 26.55 27.79 26.6 C26.99 26.61 26.18 26.61 25.35 26.62 C19.58 26.77 16.17 27.94 11.99 32.11 C11.74 34.98 11.62 37.75 11.58 40.62 C11.56 41.46 11.54 42.3 11.52 43.17 C11.46 45.86 11.41 48.55 11.36 51.24 C11.33 53.06 11.29 54.88 11.25 56.7 C11.15 61.17 11.07 65.64 10.99 70.11 C3.4 70.11 -4.19 70.11 -12.01 70.11 C-12.1 61.86 -12.17 53.6 -12.22 45.34 C-12.24 41.5 -12.27 37.67 -12.31 33.83 C-12.36 30.13 -12.38 26.43 -12.39 22.73 C-12.4 21.32 -12.41 19.91 -12.43 18.49 C-12.46 16.52 -12.46 14.54 -12.46 12.56 C-12.47 11.43 -12.48 10.3 -12.49 9.14 C-11.9 5.43 -10.6 3.78 -8.01 1.11 C-5.26 -0.26 -3.07 -0.01 0 0 Z " fill="#1E8DC8" transform="translate(174.01025390625,159.886474609375)"/>
+            <path d="M0 0 C10.23 0 20.46 0 31 0 C31.02 4.66 31.04 9.33 31.05 13.99 C31.06 15.58 31.07 17.16 31.08 18.75 C31.09 21.03 31.09 23.31 31.1 25.59 C31.1 26.3 31.11 27.01 31.11 27.74 C31.11 32.77 31.11 32.77 30 35 C29.34 35 28.68 35 28 35 C27.73 35.64 27.46 36.28 27.19 36.94 C26 39 26 39 23 40 C23 40.66 23 41.32 23 42 C18.63 43.21 14.51 43.68 10 43 C5.28 40.06 1.76 36.32 0 31 C-0.49 25.68 -0.38 20.4 -0.25 15.06 C-0.17 10.09 -0.09 5.12 0 0 Z " fill="#258ECB" transform="translate(191,371)"/>
+            <path d="M0 0 C0.56 0.16 1.12 0.31 1.7 0.48 C1.7 1.14 1.7 1.8 1.7 2.48 C2.27 2.7 2.85 2.93 3.45 3.16 C6.41 4.9 7.81 6.59 9.7 9.48 C10.15 12.98 10.15 12.98 10.09 16.96 C10.08 17.67 10.07 18.37 10.07 19.1 C10.05 21.33 10 23.56 9.95 25.79 C9.93 27.31 9.91 28.83 9.89 30.35 C9.85 34.06 9.77 37.77 9.7 41.48 C-0.53 41.48 -10.76 41.48 -21.3 41.48 C-21.37 36.86 -21.43 32.24 -21.49 27.48 C-21.52 26.04 -21.55 24.59 -21.57 23.11 C-21.63 14.59 -21.47 8.18 -15.74 1.48 C-10.63 -1.5 -5.7 -1.29 0 0 Z " fill="#248FCA" transform="translate(212.3046875,104.5234375)"/>
+            <path d="M0 0 C4.6 -0.12 9.2 -0.25 13.94 -0.38 C15.37 -0.43 16.8 -0.48 18.28 -0.54 C26.53 -0.65 31.85 0.31 38 6 C41.52 9.83 41.32 13.62 41.3 18.6 C40.8 22.63 39.51 24.54 36.5 27.25 C34 29 34 29 32 29 C31.67 29.99 31.34 30.98 31 32 C20.77 32 10.54 32 0 32 C0 21.44 0 10.88 0 0 Z " fill="#278ECA" transform="translate(369,243)"/>
+            <path d="M0 0 C10.23 0 20.46 0 31 0 C31.08 4.81 31.17 9.61 31.25 14.56 C31.29 16.06 31.32 17.57 31.36 19.12 C31.46 31.53 31.46 31.53 27 37 C23.56 40.29 19.66 42.29 14.88 42.56 C9.67 41.81 6.69 39.93 3.25 36 C2.84 35.34 2.43 34.68 2 34 C1.65 33.44 1.3 32.88 0.93 32.31 C-0.35 29.14 -0.22 26.46 -0.2 23.05 C-0.19 21.84 -0.19 20.63 -0.18 19.39 C-0.16 17.86 -0.14 16.33 -0.12 14.75 C-0.08 9.88 -0.04 5.01 0 0 Z " fill="#238DCB" transform="translate(292,372)"/>
+            <path d="M0 0 C4.97 -0.12 9.94 -0.25 15.06 -0.38 C16.62 -0.43 18.17 -0.48 19.77 -0.54 C31.18 -0.68 31.18 -0.68 35.37 2.77 C38.82 6.39 40.29 9.89 40.31 14.88 C40.15 20.87 38.43 24.78 34.34 29.15 C28.74 33.87 21.47 32.63 14.56 32.38 C9.76 32.25 4.95 32.13 0 32 C0 21.44 0 10.88 0 0 Z " fill="#278ECA" transform="translate(369,191)"/>
+            <path d="M0 0 C1.75 0.01 1.75 0.01 3.53 0.02 C5.73 0.04 5.73 0.04 7.98 0.07 C15 0.13 15 0.13 22.17 0.2 C22.17 10.76 22.17 21.32 22.17 32.2 C17.51 32.28 12.85 32.36 8.04 32.45 C6.58 32.48 5.12 32.52 3.62 32.56 C2.46 32.57 1.3 32.58 0.1 32.59 C-1.09 32.61 -2.27 32.63 -3.49 32.65 C-8.36 31.99 -11.44 29.72 -14.71 26.13 C-15.83 24.2 -15.83 24.2 -15.83 21.2 C-16.49 21.2 -17.15 21.2 -17.83 21.2 C-18.86 9.55 -18.86 9.55 -15.14 5.07 C-10.8 0.55 -6.08 -0.05 0 0 Z " fill="#258ECA" transform="translate(124.83203125,190.8046875)"/>
+            <path d="M0 0 C3.69 2.26 6.31 5.49 8.25 9.38 C8.34 11.7 8.36 14.03 8.35 16.35 C8.35 17.61 8.34 18.86 8.34 20.15 C8.33 21.75 8.32 23.35 8.31 25 C8.29 30.07 8.27 35.15 8.25 40.38 C-1.98 40.38 -12.21 40.38 -22.75 40.38 C-22.93 35.96 -23.09 31.56 -23.19 27.14 C-23.23 25.64 -23.28 24.15 -23.35 22.65 C-23.91 10.27 -23.91 10.27 -21.04 5.59 C-14.9 -0.71 -8.48 -1.93 0 0 Z " fill="#228EC9" transform="translate(263.75,104.625)"/>
+            <path d="M0 0 C5.49 2.57 9.29 5.52 12 11 C12.34 14.32 12.34 14.32 12.29 18.05 C12.28 19.86 12.28 19.86 12.27 21.7 C12.24 23.23 12.22 24.75 12.19 26.31 C12.13 31.16 12.06 36.01 12 41 C1.77 41 -8.46 41 -19 41 C-19.06 33.73 -19.06 33.73 -19.12 26.31 C-19.14 24.79 -19.16 23.27 -19.18 21.7 C-19.19 19.9 -19.19 19.9 -19.2 18.05 C-19.21 16.2 -19.21 16.2 -19.23 14.32 C-18.89 9.45 -17.58 6.02 -14 2.69 C-9.58 -0.84 -5.44 -1.25 0 0 Z " fill="#238DC9" transform="translate(311,104)"/>
+          </svg>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl md:text-2xl font-display font-black tracking-wider text-[#0a52dd]">DIICES</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#00a3ff]/15 text-[#0077cc] border border-[#00a3ff]/30">FPGA HARDWARE CORE</span>
+          </div>
+          <p class="text-[11px] md:text-xs font-semibold text-slate-500 tracking-tight flex items-center gap-1.5">
+            <span>Design Innovation on IC & Embedded System</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-[#00a3ff]"></span>
+            <span class="text-[#0a52dd] font-bold">ECG Classifier & UART Stream Controller</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- FPGA HARDWARE CONTROLS (NATIVE CHROME WEB SERIAL) -->
+      <div class="flex items-center gap-2.5 md:gap-3 flex-wrap">
+        
+        <!-- Native Chrome Serial Port Connect Button -->
+        <button id="btnConnectCom" onclick="toggleWebSerialConnection()" class="flex items-center gap-2 bg-[#0a52dd] hover:bg-[#0840ad] text-white px-5 py-2.5 rounded-full text-xs font-extrabold tracking-wide uppercase shadow-md transition-all active:scale-95">
+          <i data-lucide="plug" class="w-4 h-4" id="comIcon"></i>
+          <span id="comBtnText">CONNECT FPGA</span>
+        </button>
+
+        <!-- START / STOP STREAM CONTROLLER BUTTON -->
+        <button id="btnStreamCtrl" onclick="toggleStreamRunning()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-full text-xs font-extrabold uppercase shadow-md transition-all active:scale-95">
+          <i data-lucide="play" class="w-4 h-4" id="streamCtrlIcon"></i>
+          <span id="streamCtrlText">STREAM: RUNNING</span>
+        </button>
+
+        <!-- Hardware Status LED -->
+        <div id="connStatusPill" class="flex items-center gap-2 px-3.5 py-2 rounded-full bg-slate-100 border border-slate-200 text-xs font-mono font-bold text-slate-600">
+          <span id="connLed" class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+          <span id="connText">SIMULATOR ACTIVE</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- MAIN BENTO GRID (ORIGINAL 8 : 4 PROPORTION)                    -->
+    <!-- ============================================================== -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-6 items-stretch">
+      
+      <!-- ============================================================== -->
+      <!-- LEFT HERO CARD: RAW ECG OSCILLOSCOPE + SLIDING CONTROLS (8 COLS) -->
+      <!-- ============================================================== -->
+      <div class="lg:col-span-8 hero-card-glow rounded-[34px] md:rounded-[40px] p-5 md:p-7 text-white relative overflow-hidden flex flex-col justify-between min-h-[620px]">
+        
+        <!-- PCB Pattern Decorator -->
+        <div class="absolute inset-0 pcb-pattern opacity-25 pointer-events-none"></div>
+
+        <!-- TOP BAR INSIDE HERO: LEAD SLIDER + SAMPLING BADGE -->
+        <div class="flex flex-wrap items-center justify-between gap-3 relative z-10 mb-2">
+          
+          <!-- SLIDING LEAD SELECTOR PILL -->
+          <div class="relative flex items-center bg-black/25 backdrop-blur-md p-1 rounded-full border border-white/15" id="leadSegmentTrack">
+            <!-- Gliding Capsule Indicator -->
+            <div id="leadGlider" class="sliding-pill-indicator absolute top-1 bottom-1 rounded-full bg-white shadow-md pointer-events-none"></div>
+            
+            <button onclick="setLead('II', this)" id="leadBtnII" class="relative z-10 px-4 py-1.5 rounded-full text-xs font-extrabold transition-colors text-[#0a52dd]">LEAD II</button>
+            <button onclick="setLead('I', this)" id="leadBtnI" class="relative z-10 px-4 py-1.5 rounded-full text-xs font-bold transition-colors text-white/80 hover:text-white">LEAD I</button>
+            <button onclick="setLead('V1', this)" id="leadBtnV1" class="relative z-10 px-4 py-1.5 rounded-full text-xs font-bold transition-colors text-white/80 hover:text-white">V1</button>
+            <button onclick="setLead('V5', this)" id="leadBtnV5" class="relative z-10 px-4 py-1.5 rounded-full text-xs font-bold transition-colors text-white/80 hover:text-white">V5</button>
+          </div>
+
+          <!-- Top Spec Pill -->
+          <div class="flex items-center gap-2 bg-black/25 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/15 text-xs font-mono">
+            <i data-lucide="activity" class="w-3.5 h-3.5 text-[#00d2ff]"></i>
+            <span>500 Hz • 12-BIT ADC (0-4095)</span>
+          </div>
+        </div>
+
+        <!-- HERO HEADLINE -->
+        <div class="relative z-10 my-1">
+          <div class="inline-flex items-center gap-2 text-[11px] font-extrabold tracking-widest uppercase text-[#00d2ff] mb-1">
+            <span>REAL-TIME HARDWARE PIPELINE</span>
+            <span class="text-white/60">→</span>
+            <span class="text-white font-mono">UART 115.2 kbps</span>
+          </div>
+          <h2 class="text-2xl md:text-4xl font-display font-black tracking-tight leading-none text-white uppercase drop-shadow-sm">
+            SIGNAL INPUT ECG
+          </h2>
+          <p class="text-xs md:text-sm text-white/80 font-medium max-w-xl mt-1.5">
+            Real-time digital signal stream directly fed to FPGA Pan-Tompkins register pipeline & inference engine.
+          </p>
+        </div>
+
+        <!-- MAIN OSCILLOSCOPE CANVAS (CH 1: PRIMARY ECG) -->
+        <div class="relative z-10 bg-black/30 backdrop-blur-md rounded-[26px] p-3 border border-white/20 shadow-inner flex-1 flex flex-col justify-between my-2">
+          
+          <!-- Waveform Header Metrik -->
+          <div class="flex items-center justify-between px-3 py-1 text-[11px] font-mono text-white/70">
+            <span id="canvasLeadTag" class="text-emerald-400 font-bold">LEAD II • REAL-TIME TRACE</span>
+            <div class="flex items-center gap-4">
+              <span class="cursor-pointer hover:text-white" onclick="toggleVoltageGain()">GAIN: <b id="voltGainVal" class="text-[#00d2ff]">10 mm/mV</b></span>
+              <span class="cursor-pointer hover:text-white" onclick="toggleSweepSpeed()">SPEED: <b id="sweepSpeedVal" class="text-[#00d2ff]">25 mm/s</b></span>
+              <span id="sampleCountText">SAMPLES: 0</span>
+            </div>
+          </div>
+
+          <!-- The Canvas Area -->
+          <div class="relative w-full h-[220px] md:h-[260px] rounded-[18px] overflow-hidden bg-slate-950/90 border border-white/10">
+            <canvas id="ecgCanvas" width="900" height="260" class="w-full h-full block"></canvas>
+            
+            <!-- Live Indicator Badge -->
+            <div class="absolute bottom-2.5 left-3 pointer-events-none bg-black/50 backdrop-blur px-2.5 py-1 rounded-md text-[10px] font-mono text-white/90 flex items-center gap-1.5 border border-white/10">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              <span>LIVE ECG STREAM</span>
+            </div>
+          </div>
+
+          <!-- Waveform Controls Toolbar: Gain Slider + Audio + Freeze + Reset -->
+          <div class="flex flex-wrap items-center justify-between gap-2 px-2 pt-2.5 text-xs">
+            
+            <!-- GAIN SLIDING SEGMENT -->
+            <div class="flex items-center gap-2">
+              <span class="text-white/70 font-bold text-[11px]">GAIN:</span>
+              <div class="relative flex items-center bg-black/30 p-0.5 rounded-lg border border-white/10" id="gainSegmentTrack">
+                <div id="gainGlider" class="sliding-pill-indicator absolute top-0.5 bottom-0.5 rounded-md bg-[#00d2ff] shadow-sm pointer-events-none"></div>
+                <button onclick="setGain(0.5, this)" class="relative z-10 px-2 py-0.5 text-[10px] font-mono font-bold text-white transition-colors">0.5x</button>
+                <button onclick="setGain(1.0, this)" class="relative z-10 px-2 py-0.5 text-[10px] font-mono font-bold text-slate-950 transition-colors">1.0x</button>
+                <button onclick="setGain(1.5, this)" class="relative z-10 px-2 py-0.5 text-[10px] font-mono font-bold text-white transition-colors">1.5x</button>
+                <button onclick="setGain(2.0, this)" class="relative z-10 px-2 py-0.5 text-[10px] font-mono font-bold text-white transition-colors">2.0x</button>
+              </div>
+            </div>
+
+            <!-- AUDIO & FREEZE BUTTONS -->
+            <div class="flex items-center gap-2">
+              <button id="btnAudio" onclick="toggleAudio()" class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/30 hover:bg-black/50 border border-white/10 text-white text-[11px] font-bold active:scale-95 transition">
+                <i data-lucide="volume-2" class="w-3.5 h-3.5 text-[#00d2ff]" id="audioIcon"></i>
+                <span id="audioText">BEEP ON</span>
+              </button>
+
+              <button id="btnPause" onclick="togglePause()" class="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/30 hover:bg-black/50 border border-white/10 text-white text-[11px] font-bold active:scale-95 transition">
+                <i data-lucide="pause" class="w-3.5 h-3.5 text-white" id="pauseIcon"></i>
+                <span id="pauseText">FREEZE</span>
+              </button>
+
+              <button onclick="clearWaveform()" class="px-2.5 py-1 rounded-lg bg-black/30 hover:bg-black/50 border border-white/10 text-white/80 hover:text-white text-[10px] font-mono transition">
+                RESET
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- BOTTOM SLIDER BAR: INPUT GENERATOR RHYTHM SELECTOR -->
+        <div class="relative z-10 flex flex-wrap items-center justify-between gap-3 pt-3 mt-1 border-t border-white/15">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-white/80">Input Generator:</span>
+            
+            <!-- SLIDING ANOMALY SELECTOR -->
+            <div class="relative flex items-center bg-black/30 backdrop-blur p-1 rounded-full border border-white/15" id="anomSegmentTrack">
+              <div id="anomGlider" class="sliding-pill-indicator absolute top-1 bottom-1 rounded-full bg-white shadow-md pointer-events-none"></div>
+              
+              <button onclick="setAnomaly('normal', this)" id="btnAnomNormal" class="relative z-10 px-3.5 py-1 rounded-full text-xs font-bold transition-colors text-slate-950">Normal (74 bpm)</button>
+              <button onclick="setAnomaly('mi', this)" id="btnAnomMI" class="relative z-10 px-3.5 py-1 rounded-full text-xs font-bold transition-colors text-white/80 hover:text-white">Infark Miokard (STEMI)</button>
+              <button onclick="setAnomaly('unclassified', this)" id="btnAnomUnclass" class="relative z-10 px-3.5 py-1 rounded-full text-xs font-bold transition-colors text-white/80 hover:text-white">Unclassified / Noise</button>
+            </div>
+          </div>
+
+          <div class="text-xs text-white/80 font-mono flex items-center gap-1.5">
+            <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-300"></i>
+            <span>Latency: <b>1.84 μs</b></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- RIGHT COLUMN: 2 ROUNDED BENTO CARDS (4 COLS)                  -->
+      <!-- ============================================================== -->
+      <div class="lg:col-span-4 flex flex-col gap-5 md:gap-6 justify-between">
+        
+        <!-- ============================================================ -->
+        <!-- CARD 1: DETECTOR SIGNAL FPGA (PAN-TOMPKINS FILTER PIPELINE)  -->
+        <!-- ============================================================ -->
+        <div class="bg-[#eef4ff] rounded-[34px] p-6 relative overflow-hidden smooth-shadow border border-blue-100 flex flex-col justify-between hover-lift">
+          
+          <div>
+            <!-- Header Card 1 -->
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-2xl bg-[#0a52dd] text-white flex items-center justify-center shadow-md">
+                  <i data-lucide="radar" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <span class="text-xs font-extrabold uppercase tracking-wider text-[#0a52dd] block leading-none">DETECTOR FPGA</span>
+                  <span class="text-[10px] text-slate-500 font-semibold">QRS Energy Filter Engine</span>
+                </div>
+              </div>
+              <span class="text-[10px] font-mono font-bold text-[#0a52dd] bg-blue-100/70 border border-blue-200/80 px-2.5 py-1 rounded-full">PAN-TOMPKINS</span>
+            </div>
+
+            <!-- SLIDING PIPELINE STAGE SELECTOR (BPF, DER, SQR, MWI) -->
+            <div class="my-3">
+              <div class="flex items-center justify-between mb-1.5 text-xs font-bold text-slate-700">
+                <span>PIPELINE REGISTER:</span>
+                <span id="pipelineStageTag" class="text-[10px] font-mono text-[#0a52dd]">MWI STAGE</span>
+              </div>
+              
+              <div class="relative flex items-center justify-between bg-white p-1 rounded-full border border-slate-200 shadow-inner" id="stageSegmentTrack">
+                <div id="stageGlider" class="sliding-pill-indicator absolute top-1 bottom-1 rounded-full bg-[#0a52dd] shadow-sm pointer-events-none"></div>
+                
+                <button onclick="setPipelineStage('BPF', this)" id="btnStageBPF" class="relative z-10 flex-1 py-1 text-center text-xs font-extrabold transition-colors text-slate-600">BPF</button>
+                <button onclick="setPipelineStage('DER', this)" id="btnStageDER" class="relative z-10 flex-1 py-1 text-center text-xs font-extrabold transition-colors text-slate-600">DER</button>
+                <button onclick="setPipelineStage('SQR', this)" id="btnStageSQR" class="relative z-10 flex-1 py-1 text-center text-xs font-extrabold transition-colors text-slate-600">SQR</button>
+                <button onclick="setPipelineStage('MWI', this)" id="btnStageMWI" class="relative z-10 flex-1 py-1 text-center text-xs font-extrabold transition-colors text-white">MWI</button>
+              </div>
+            </div>
+
+            <!-- SLIDING DETECTION THRESHOLD (LOW, MID, HIGH, ADAPT) -->
+            <div class="my-3">
+              <div class="flex items-center justify-between mb-1.5 text-xs font-bold text-slate-700">
+                <span>THRESHOLD LEVEL:</span>
+                <span id="threshDescText" class="text-[10px] font-mono text-slate-500">Optimal Threshold</span>
+              </div>
+              
+              <div class="relative flex items-center justify-between bg-white p-1 rounded-full border border-slate-200 shadow-inner" id="threshSegmentTrack">
+                <div id="threshGlider" class="sliding-pill-indicator absolute top-1 bottom-1 rounded-full bg-[#0a52dd] shadow-sm pointer-events-none"></div>
+                
+                <button onclick="setThresholdLevel('low', this)" class="relative z-10 flex-1 py-1 text-center text-[10px] font-extrabold transition-colors text-slate-600">LOW</button>
+                <button onclick="setThresholdLevel('mid', this)" id="btnThreshMid" class="relative z-10 flex-1 py-1 text-center text-[10px] font-extrabold transition-colors text-white">MID</button>
+                <button onclick="setThresholdLevel('high', this)" class="relative z-10 flex-1 py-1 text-center text-[10px] font-extrabold transition-colors text-slate-600">HIGH</button>
+                <button onclick="setThresholdLevel('adapt', this)" class="relative z-10 flex-1 py-1 text-center text-[10px] font-extrabold transition-colors text-slate-600">ADAPT</button>
+              </div>
+            </div>
+
+            <!-- MINI OSCILLOSCOPE CANVAS (CH 2: FPGA DETECTOR SIGNAL) -->
+            <div class="my-3 bg-white rounded-[20px] p-2 shadow-sm border border-slate-200">
+              <div class="w-full h-[115px] rounded-[14px] overflow-hidden bg-slate-950/90 relative">
+                <canvas id="detectorCanvas" width="450" height="115" class="w-full h-full block"></canvas>
+                <div class="absolute top-1.5 left-2.5 pointer-events-none text-[9px] font-mono text-cyan-400">
+                  <span id="detectorCanvasLabel">MWI INTEGRATION WAVEFORM</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Metric: Total R-Peaks & Latency -->
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200/80">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">TOTAL R-PEAKS</span>
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-xs text-slate-500 font-bold">COUNT</span>
+                <span id="rPeakVal" class="text-2xl font-display font-black text-slate-900 leading-none">158</span>
+              </div>
+            </div>
+
+            <div class="text-right font-mono text-[11px] text-slate-600">
+              <span>Latency DSP: <b class="text-[#0a52dd]">18.4 ms</b></span>
+              <div class="text-[10px] text-slate-400">Clock: 50 MHz</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- CARD 2: OUTPUT KLASIFIKASI (3 SPESIFIK KELAS DENGAN SLIDER) -->
+        <!-- ============================================================ -->
+        <div class="bg-[#f0f4ff] rounded-[34px] p-6 relative overflow-hidden smooth-shadow border border-blue-100 flex flex-col justify-between hover-lift">
+          
+          <div>
+            <!-- Header Card 2 -->
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-md">
+                  <i data-lucide="heart-pulse" class="w-4 h-4 fill-current"></i>
+                </div>
+                <div>
+                  <span class="text-xs font-extrabold uppercase tracking-wider text-[#0a52dd] block leading-none">OUTPUT KLASIFIKASI</span>
+                  <span class="text-[10px] text-slate-500 font-semibold">FPGA Inference Decision</span>
+                </div>
+              </div>
+              <span class="text-[10px] font-mono font-bold text-slate-600 bg-white/80 border border-slate-200 px-2.5 py-1 rounded-full">1D-CNN</span>
+            </div>
+
+            <!-- SLIDING 3 TARGET CLASS SELECTOR (NORMAL, INFARK MIOKARD, UNCLASSIFIED) -->
+            <div class="my-2.5">
+              <div class="flex items-center justify-between mb-1.5 text-xs font-bold text-slate-700">
+                <span>TARGET CLASS:</span>
+                <span id="classTagId" class="text-[10px] font-mono text-emerald-600 font-bold">CLASS 0</span>
+              </div>
+              
+              <div class="relative flex items-center justify-between bg-white p-1 rounded-full border border-slate-200 shadow-inner" id="classSegmentTrack">
+                <div id="classGlider" class="sliding-pill-indicator absolute top-1 bottom-1 rounded-full bg-slate-900 shadow-sm pointer-events-none"></div>
+                
+                <button onclick="forceClass(0, this)" id="btnClass0" class="relative z-10 flex-1 py-1 text-center text-xs font-extrabold transition-colors text-white">NORMAL</button>
+                <button onclick="forceClass(1, this)" id="btnClass1" class="relative z-10 flex-1 py-1 text-center text-xs font-extrabold transition-colors text-slate-600">INFARK MIOKARD</button>
+                <button onclick="forceClass(2, this)" id="btnClass2" class="relative z-10 flex-1 py-1 text-center text-xs font-extrabold transition-colors text-slate-600">UNCLASS</button>
+              </div>
+            </div>
+
+            <!-- BIG CLASSIFICATION INFERENCE BANNER -->
+            <div id="classResultContainer" class="my-3 bg-white rounded-[22px] p-4 text-center shadow-sm border-2 border-emerald-500 transition-all">
+              <div class="text-[10px] font-bold tracking-wider text-slate-400 uppercase">FPGA REAL-TIME DIAGNOSIS</div>
+              <div id="classResultTitle" class="text-2xl font-display font-black text-emerald-600 tracking-tight my-1 uppercase">
+                NORMAL
+              </div>
+              <p id="classResultDesc" class="text-xs text-slate-500 font-medium leading-relaxed">
+                Normal Sinus Rhythm • Segmen ST isoelektrik stabil tanpa elevasi patologis.
+              </p>
+            </div>
+          </div>
+
+          <!-- Bottom: Live BPM & Confidence Meter -->
+          <div class="flex items-center justify-between pt-2 border-t border-slate-200/80">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">HEART RATE</span>
+              <div class="flex items-baseline gap-1.5">
+                <span id="bpmVal" class="text-3xl font-display font-black text-slate-900 leading-none">74</span>
+                <span class="text-xs font-bold text-slate-500 font-mono">BPM</span>
+              </div>
+            </div>
+
+            <div class="text-right">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">CONFIDENCE</span>
+              <span id="confidenceVal" class="text-2xl font-display font-black text-emerald-600">99.4%</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- FOOTER STATUS BAR                                              -->
+    <!-- ============================================================== -->
+    <footer class="mt-6 pt-4 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-[#0a52dd]"></span>
+        <span class="font-bold text-slate-700">DIICES Biomedical Embedded Lab</span>
+        <span class="text-slate-400">•</span>
+        <span>Format UART: <code class="bg-slate-100 px-2 py-0.5 rounded text-[11px] font-mono text-slate-700 border border-slate-200">[0xAA] [ECG_H] [ECG_L] [DET_H] [DET_L] [CLASS] [BPM] [0x55]</code></span>
+      </div>
+      <div class="flex items-center gap-3 font-mono text-[11px]">
+        <span id="footerPortText">Port: Web Serial (OFFLINE)</span>
+        <span>•</span>
+        <span>Baud: 115,200 bps</span>
+        <span>•</span>
+        <span class="text-[#0a52dd] font-bold">READY</span>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- JAVASCRIPT: SLIDING PILL ENGINE + WEB SERIAL + ECG GENERATOR + CANVAS -->
+  <script>
+    // Inisialisasi ikon Lucide
+    lucide.createIcons();
+
+    // ==============================================================
+    // 1. ENGINE ANIMASI GESER (SLIDING PILL / SEGMENTED CONTROLS)
+    // ==============================================================
+    function slideIndicator(trackId, gliderId, activeBtn) {
+      const track = document.getElementById(trackId);
+      const glider = document.getElementById(gliderId);
+      if (!track || !glider || !activeBtn) return;
+
+      const trackRect = track.getBoundingClientRect();
+      const btnRect = activeBtn.getBoundingClientRect();
+
+      const left = btnRect.left - trackRect.left;
+      const width = btnRect.width;
+
+      glider.style.left = `${left}px`;
+      glider.style.width = `${width}px`;
+    }
+
+    // Inisialisasi posisi awal seluruh slider saat load dan resize
+    function initAllGliders() {
+      slideIndicator('leadSegmentTrack', 'leadGlider', document.getElementById('leadBtnII'));
+      slideIndicator('gainSegmentTrack', 'gainGlider', document.querySelectorAll('#gainSegmentTrack button')[1]);
+      slideIndicator('anomSegmentTrack', 'anomGlider', document.getElementById('btnAnomNormal'));
+      slideIndicator('stageSegmentTrack', 'stageGlider', document.getElementById('btnStageMWI'));
+      slideIndicator('threshSegmentTrack', 'threshGlider', document.getElementById('btnThreshMid'));
+      slideIndicator('classSegmentTrack', 'classGlider', document.getElementById('btnClass0'));
+    }
+
+    window.addEventListener('load', () => setTimeout(initAllGliders, 100));
+    window.addEventListener('resize', initAllGliders);
+
+    // ==============================================================
+    // 2. STATE GLOBAL CONTROLLER
+    // ==============================================================
+    let isConnected = false;
+    let isStreamingRunning = true;
+    let isPaused = false;
+    let audioEnabled = true;
+
+    let currentLead = 'II';
+    let currentStage = 'MWI';
+    let currentAnomaly = 'normal';
+    let currentGain = 1.0;
+    let currentThreshLevel = 'mid';
+
+    let gIdx = 1;
+    let sIdx = 0;
+
+    let serialPort = null;
+    let serialReader = null;
+    let serialWriter = null;
+
+    // Audio Context untuk BEEP R-Peak
+    let audioCtx = null;
+    function playBeep() {
+      if (!audioEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch (e) {
+        console.warn("Audio error:", e);
+      }
+    }
+
+    // ==============================================================
+    // 3. CANVAS OSCILLOSCOPE DENGAN MEDICAL GRID
+    // ==============================================================
+    const ecgCanvas = document.getElementById("ecgCanvas");
+    const ecgCtx = ecgCanvas.getContext("2d");
+    const detCanvas = document.getElementById("detectorCanvas");
+    const detCtx = detCanvas.getContext("2d");
+
+    const MAX_POINTS = 600;
+    let ecgBuffer = new Array(MAX_POINTS).fill(2048);
+    let detectorBuffer = new Array(MAX_POINTS).fill(0);
+    let sampleCount = 0;
+    let rPeakCount = 158;
+
+    function drawGrid(ctx, w, h) {
+      ctx.fillStyle = "#020617";
+      ctx.fillRect(0, 0, w, h);
+
+      // Minor grid
+      ctx.strokeStyle = "rgba(16, 185, 129, 0.08)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = 0; x < w; x += 15) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+      for (let y = 0; y < h; y += 15) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+      ctx.stroke();
+
+      // Major grid
+      ctx.strokeStyle = "rgba(16, 185, 129, 0.18)";
+      ctx.beginPath();
+      for (let x = 0; x < w; x += 75) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+      for (let y = 0; y < h; y += 75) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+      ctx.stroke();
+    }
+
+    function renderCanvas() {
+      // 1. Primary ECG Canvas
+      const ew = ecgCanvas.width;
+      const eh = ecgCanvas.height;
+      drawGrid(ecgCtx, ew, eh);
+
+      // Garis Isoelektrik
+      ecgCtx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+      ecgCtx.setLineDash([4, 4]);
+      ecgCtx.beginPath();
+      ecgCtx.moveTo(0, eh / 2);
+      ecgCtx.lineTo(ew, eh / 2);
+      ecgCtx.stroke();
+      ecgCtx.setLineDash([]);
+
+      // Gelombang ECG
+      ecgCtx.strokeStyle = "#00ff88";
+      ecgCtx.shadowColor = "#00ff88";
+      ecgCtx.shadowBlur = 8;
+      ecgCtx.lineWidth = 2.2;
+      ecgCtx.beginPath();
+
+      const step = ew / (MAX_POINTS - 1);
+      for (let i = 0; i < MAX_POINTS; i++) {
+        const val = ecgBuffer[i];
+        const norm = (val - 2048) / 2048.0;
+        const y = (eh / 2) - (norm * (eh * 0.42) * currentGain);
+        const x = i * step;
+        if (i === 0) ecgCtx.moveTo(x, y);
+        else ecgCtx.lineTo(x, y);
+      }
+      ecgCtx.stroke();
+      ecgCtx.shadowBlur = 0;
+
+      // 2. Pan-Tompkins Detector Canvas
+      const dw = detCanvas.width;
+      const dh = detCanvas.height;
+      drawGrid(detCtx, dw, dh);
+
+      detCtx.strokeStyle = "#00d2ff";
+      detCtx.shadowColor = "#00d2ff";
+      detCtx.shadowBlur = 6;
+      detCtx.lineWidth = 2.0;
+      detCtx.beginPath();
+
+      const dStep = dw / (MAX_POINTS - 1);
+      for (let i = 0; i < MAX_POINTS; i++) {
+        const dVal = detectorBuffer[i];
+        const dNorm = dVal / 4095.0;
+        const dy = (dh * 0.90) - (dNorm * (dh * 0.80));
+        const dx = i * dStep;
+        if (i === 0) detCtx.moveTo(dx, dy);
+        else detCtx.lineTo(dx, dy);
+      }
+      detCtx.stroke();
+      detCtx.shadowBlur = 0;
+
+      requestAnimationFrame(renderCanvas);
+    }
+    requestAnimationFrame(renderCanvas);
+
+    // ==============================================================
+    // DATA BUFFER PUSHER & R-PEAK DETECTOR
+    // ==============================================================
+    let lastPeakTime = 0;
+
+    function pushSample(rawEcg, detVal) {
+      if (isPaused) return;
+
+      ecgBuffer.shift();
+      ecgBuffer.push(rawEcg);
+
+      detectorBuffer.shift();
+      detectorBuffer.push(detVal);
+
+      sampleCount++;
+      sampleCountText.innerText = "SAMPLES: " + sampleCount;
+
+      // Deteksi R-peak lokal untuk trigger suara beep & counter
+      const now = Date.now();
+      if (detVal > 2400 && (now - lastPeakTime) > 350) {
+        lastPeakTime = now;
+        rPeakCount++;
+        document.getElementById('rPeakVal').innerText = rPeakCount;
+        playBeep();
+      }
+    }
+
+    // ==============================================================
+    // 4. KLASIFIKASI & INTERAKTIF DIAGNOSIS (3 SPESIFIK KELAS)
+    // ==============================================================
+    const resultBox = document.getElementById("classResultContainer");
+    const resultTitle = document.getElementById("classResultTitle");
+    const resultDesc = document.getElementById("classResultDesc");
+    const confVal = document.getElementById("confidenceVal");
+    const bpmVal = document.getElementById("bpmVal");
+    const classTag = document.getElementById("classTagId");
+
+    function setClassification(classId, btnElem = null) {
+      if (!btnElem) {
+        const btnMap = [document.getElementById('btnClass0'), document.getElementById('btnClass1'), document.getElementById('btnClass2')];
+        btnElem = btnMap[classId];
+      }
+
+      // Animasi geser capsule class
+      slideIndicator('classSegmentTrack', 'classGlider', btnElem);
+
+      // Reset style warna teks tombol class
+      ['btnClass0', 'btnClass1', 'btnClass2'].forEach(id => {
+        const b = document.getElementById(id);
+        if (b) {
+          b.classList.remove('text-white');
+          b.classList.add('text-slate-600');
+        }
+      });
+      if (btnElem) {
+        btnElem.classList.remove('text-slate-600');
+        btnElem.classList.add('text-white');
+      }
+
+      if (classId === 0) {
+        // NORMAL
+        classTag.innerText = "CLASS 0";
+        classTag.className = "text-[10px] font-mono text-emerald-600 font-bold";
+        resultBox.className = "my-3 bg-white rounded-[22px] p-4 text-center shadow-sm border-2 border-emerald-500 transition-all";
+        resultTitle.innerText = "NORMAL";
+        resultTitle.className = "text-2xl font-display font-black text-emerald-600 tracking-tight my-1 uppercase";
+        resultDesc.innerText = "Normal Sinus Rhythm • Segmen ST isoelektrik stabil tanpa elevasi patologis.";
+        confVal.innerText = "99.4%";
+        confVal.className = "text-2xl font-display font-black text-emerald-600";
+      } else if (classId === 1) {
+        // INFARK MIOKARD
+        classTag.innerText = "CLASS 1";
+        classTag.className = "text-[10px] font-mono text-rose-600 font-bold";
+        resultBox.className = "my-3 bg-white rounded-[22px] p-4 text-center shadow-sm border-2 border-rose-500 transition-all";
+        resultTitle.innerText = "INFARK MIOKARD";
+        resultTitle.className = "text-2xl font-display font-black text-rose-600 tracking-tight my-1 uppercase";
+        resultDesc.innerText = "STEMI (ST-Elevation Myocardial Infarction) • Elevasi segmen ST patologis khas infark.";
+        confVal.innerText = "98.7%";
+        confVal.className = "text-2xl font-display font-black text-rose-600";
+      } else {
+        // UNCLASSIFIED
+        classTag.innerText = "CLASS 2";
+        classTag.className = "text-[10px] font-mono text-amber-600 font-bold";
+        resultBox.className = "my-3 bg-white rounded-[22px] p-4 text-center shadow-sm border-2 border-amber-500 transition-all";
+        resultTitle.innerText = "UNCLASSIFIED";
+        resultTitle.className = "text-2xl font-display font-black text-amber-600 tracking-tight my-1 uppercase";
+        resultDesc.innerText = "Artifact / Aberrant Signal • Derau baseline wander berlebih atau fibrilasi non-QRS.";
+        confVal.innerText = "84.2%";
+        confVal.className = "text-2xl font-display font-black text-amber-600";
+      }
+    }
+
+    window.forceClass = function(id, btn) {
+      setClassification(id, btn);
+      const modes = ['normal', 'mi', 'unclassified'];
+      const anomBtns = [document.getElementById('btnAnomNormal'), document.getElementById('btnAnomMI'), document.getElementById('btnAnomUnclass')];
+      setAnomaly(modes[id], anomBtns[id]);
+    };
+
+    // ==============================================================
+    // 5. NATIVE CHROME WEB SERIAL API (PERIZINAN RESMI POPUP CHROME)
+    // ==============================================================
+    async function toggleWebSerialConnection() {
+      if (!("serial" in navigator)) {
+        alert("Web Serial API membutuhkan Google Chrome atau Microsoft Edge.\nBuka file ini menggunakan Chrome atau Edge untuk menghubungkan ke FPGA.");
+        return;
+      }
+
+      if (isConnected) {
+        try {
+          if (serialWriter) {
+            await serialWriter.write(new Uint8Array([0xAA, 0x00, 0x55]));
+            serialWriter.releaseLock();
+            serialWriter = null;
+          }
+          if (serialReader) {
+            await serialReader.cancel();
+            serialReader = null;
+          }
+          if (serialPort) {
+            await serialPort.close();
+            serialPort = null;
+          }
+        } catch (e) {
+          console.warn("Disconnect:", e);
+        }
+
+        isConnected = false;
+        btnConnectCom.className = "flex items-center gap-2 bg-[#0a52dd] hover:bg-[#0840ad] text-white px-5 py-2.5 rounded-full text-xs font-extrabold tracking-wide uppercase shadow-md transition-all active:scale-95";
+        comBtnText.innerText = "CONNECT FPGA";
+        comIcon.setAttribute("data-lucide", "plug");
+        connLed.className = "w-2.5 h-2.5 rounded-full bg-slate-400";
+        connText.innerText = "SIMULATOR ACTIVE";
+        footerPortText.innerText = "Port: Web Serial (OFFLINE)";
+        lucide.createIcons();
+        return;
+      }
+
+      try {
+        // Memicu pop-up izin resmi Google Chrome (HANYA HARDWARE ASLI YANG MUNCUL)
+        serialPort = await navigator.serial.requestPort();
+        await serialPort.open({ baudRate: 115200 });
+
+        isConnected = true;
+        btnConnectCom.className = "flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white px-5 py-2.5 rounded-full text-xs font-extrabold tracking-wide uppercase shadow-md transition-all active:scale-95";
+        comBtnText.innerText = "DISCONNECT";
+        comIcon.setAttribute("data-lucide", "power");
+        connLed.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+        connText.innerText = "FPGA CONNECTED (115.2k)";
+        footerPortText.innerText = "Port: Web Serial UART @ 115,200 bps (CONNECTED)";
+        lucide.createIcons();
+
+        serialWriter = serialPort.writable.getWriter();
+        await serialWriter.write(new Uint8Array([0xAA, 0x01, 0x55])); // Kirim START command
+
+        readSerialLoop();
+      } catch (err) {
+        if (err.name !== "NotFoundError") {
+          alert("Gagal membuka port FPGA:\n" + err.message);
+        }
+      }
+    }
+
+    async function readSerialLoop() {
+      let rxBuf = [];
+      const reader = serialPort.readable.getReader();
+      serialReader = reader;
+
+      try {
+        while (isConnected) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          if (value) {
+            for (let i = 0; i < value.length; i++) {
+              rxBuf.push(value[i]);
+              if (rxBuf.length > 32) rxBuf.shift();
+
+              // Paket RX: [0xAA] [ECG_H] [ECG_L] [DET_H] [DET_L] [CLASS] [BPM] [0x55]
+              if (rxBuf.length >= 8) {
+                if (rxBuf[0] === 0xAA && rxBuf[7] === 0x55) {
+                  const rawEcg = (rxBuf[1] << 8) | rxBuf[2];
+                  const detVal = (rxBuf[3] << 8) | rxBuf[4];
+                  const classId = rxBuf[5];
+                  const hwBpm = rxBuf[6];
+
+                  pushSample(rawEcg, detVal);
+                  if (hwBpm > 0) bpmVal.innerText = hwBpm;
+                  setClassification(classId);
+
+                  rxBuf = [];
+                } else if (rxBuf[0] !== 0xAA) {
+                  rxBuf.shift();
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Serial loop exit:", err);
+      } finally {
+        try { reader.releaseLock(); } catch(e) {}
+      }
+    }
+
+    // ==============================================================
+    // 6. CONTROLLER START / STOP STREAM
+    // ==============================================================
+    async function toggleStreamRunning() {
+      isStreamingRunning = !isStreamingRunning;
+      if (isStreamingRunning) {
+        btnStreamCtrl.className = "flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2.5 rounded-full text-xs font-extrabold uppercase shadow-md transition-all active:scale-95";
+        streamCtrlText.innerText = "STREAM: RUNNING";
+        streamCtrlIcon.setAttribute("data-lucide", "play");
+        if (serialWriter && isConnected) {
+          await serialWriter.write(new Uint8Array([0xAA, 0x01, 0x55]));
+        }
+      } else {
+        btnStreamCtrl.className = "flex items-center gap-2 bg-rose-600 hover:bg-rose-500 text-white px-4 py-2.5 rounded-full text-xs font-extrabold uppercase shadow-md transition-all active:scale-95";
+        streamCtrlText.innerText = "STREAM: STOPPED";
+        streamCtrlIcon.setAttribute("data-lucide", "square");
+        if (serialWriter && isConnected) {
+          await serialWriter.write(new Uint8Array([0xAA, 0x00, 0x55]));
+        }
+      }
+      lucide.createIcons();
+    }
+
+    // ==============================================================
+    // 7. GENERATOR SINYAL SINTETIS (500 Hz ACCURATE TIMING)
+    // ==============================================================
+    let phase = 0.0;
+    const SAMPLE_RATE = 500;
+
+    function generateSample() {
+      let bpm = 74;
+      if (currentAnomaly === 'mi') bpm = 82;
+      else if (currentAnomaly === 'unclassified') bpm = 0;
+
+      bpmVal.innerText = bpm;
+
+      const freq = (bpm > 0 ? bpm : 60) / 60.0;
+      phase += (freq / SAMPLE_RATE) * 2 * Math.PI;
+      if (phase > 2 * Math.PI) phase -= 2 * Math.PI;
+
+      const p = phase;
+      let val = 2048.0;
+
+      let rScale = 1.0, pScale = 1.0, sScale = 1.0, tScale = 1.0;
+      if (currentLead === 'I') { rScale = 0.65; pScale = 0.7; tScale = 0.7; }
+      else if (currentLead === 'V1') { rScale = 0.35; sScale = 2.4; pScale = -0.8; tScale = -0.9; }
+      else if (currentLead === 'V5') { rScale = 1.45; sScale = 0.6; tScale = 1.2; }
+
+      if (currentAnomaly === 'normal') {
+        if (0.5 < p && p < 0.95) val += Math.sin((p - 0.5) * (Math.PI / 0.45)) * (130 * pScale);
+        if (1.3 < p && p < 1.45) val -= Math.sin((p - 1.3) * (Math.PI / 0.15)) * 180;
+        if (1.45 <= p && p <= 1.65) val += Math.sin((p - 1.45) * (Math.PI / 0.2)) * (1600 * rScale);
+        if (1.65 < p && p < 1.85) val -= Math.sin((p - 1.65) * (Math.PI / 0.2)) * (340 * sScale);
+        if (2.2 < p && p < 3.0) val += Math.sin((p - 2.2) * (Math.PI / 0.8)) * (290 * tScale);
+      } else if (currentAnomaly === 'mi') {
+        // INFARK MIOKARD (STEMI - Elevasi Segmen ST Tombstone)
+        if (1.25 < p && p < 1.45) val -= Math.sin((p - 1.25) * (Math.PI / 0.2)) * 360;
+        if (1.45 <= p && p <= 1.65) val += Math.sin((p - 1.45) * (Math.PI / 0.2)) * (1450 * rScale);
+        if (1.65 <= p && p <= 2.2) {
+          const stElev = Math.sin((p - 1.65) * (Math.PI / 0.55)) * 520;
+          val += stElev + 250;
+        }
+        if (2.2 < p && p < 3.2) val += Math.sin((p - 2.2) * (Math.PI / 1.0)) * 650 + 120;
+      } else if (currentAnomaly === 'unclassified') {
+        val += (Math.sin(Date.now() / 40) * 550) + (Math.cos(p * 8) * 450) + (Math.sin(p * 2.3) * 300);
+      }
+
+      val += Math.sin(Date.now() / 1200) * 35.0;
+      val = Math.max(0, Math.min(4095, Math.round(val)));
+
+      const delta = Math.abs(val - 2048);
+      let det = 80;
+      if (currentStage === 'BPF') det = Math.max(0, Math.min(4095, Math.round((val - 2048) * 1.5 + 2048)));
+      else if (currentStage === 'DER') det = Math.max(0, Math.min(4095, Math.round(delta * 2.3)));
+      else if (currentStage === 'SQR') det = Math.max(0, Math.min(4095, Math.round(Math.pow(delta / 2048.0, 2) * 4095)));
+      else det = delta > 400 ? Math.max(0, Math.min(4095, Math.round(Math.pow(delta / 1600.0, 1.8) * 3800))) : 80;
+
+      return { val, det };
+    }
+
+    setInterval(() => {
+      if (!isStreamingRunning) return;
+      for (let i = 0; i < 5; i++) {
+        const s = generateSample();
+        if (isConnected && serialWriter) {
+          try {
+            serialWriter.write(new Uint8Array([0xAA, (s.val >> 8) & 0xFF, s.val & 0xFF, 0x55]));
+          } catch(e) {}
+        }
+        if (!isConnected) {
+          pushSample(s.val, s.det);
+        }
+      }
+    }, 10);
+
+    // ==============================================================
+    // 8. INTERACTIVE SLIDER DISPATCHERS
+    // ==============================================================
+    window.setLead = function(lead, btnElem) {
+      currentLead = lead;
+      slideIndicator('leadSegmentTrack', 'leadGlider', btnElem);
+      
+      document.querySelectorAll('#leadSegmentTrack button').forEach(b => {
+        b.classList.remove('text-[#0a52dd]');
+        b.classList.add('text-white/80');
+      });
+      btnElem.classList.remove('text-white/80');
+      btnElem.classList.add('text-[#0a52dd]');
+
+      document.getElementById('canvasLeadTag').innerText = `LEAD ${lead} • REAL-TIME TRACE`;
+    };
+
+    window.setAnomaly = function(type, btnElem) {
+      currentAnomaly = type;
+      slideIndicator('anomSegmentTrack', 'anomGlider', btnElem);
+
+      document.querySelectorAll('#anomSegmentTrack button').forEach(b => {
+        b.classList.remove('text-slate-950');
+        b.classList.add('text-white/80');
+      });
+      btnElem.classList.remove('text-white/80');
+      btnElem.classList.add('text-slate-950');
+
+      if (type === 'normal') setClassification(0);
+      else if (type === 'mi') setClassification(1);
+      else if (type === 'unclassified') setClassification(2);
+    };
+
+    window.setPipelineStage = function(stage, btnElem) {
+      currentStage = stage;
+      slideIndicator('stageSegmentTrack', 'stageGlider', btnElem);
+
+      document.querySelectorAll('#stageSegmentTrack button').forEach(b => {
+        b.classList.remove('text-white');
+        b.classList.add('text-slate-600');
+      });
+      btnElem.classList.remove('text-slate-600');
+      btnElem.classList.add('text-white');
+
+      const labelMap = { 
+        'BPF': 'BANDPASS FILTER (5-15 Hz)', 
+        'DER': '1ST DERIVATIVE FILTER', 
+        'SQR': 'NON-LINEAR SQUARING', 
+        'MWI': 'MWI INTEGRATION WAVEFORM' 
+      };
+      document.getElementById('pipelineStageTag').innerText = stage + ' STAGE';
+      document.getElementById('detectorCanvasLabel').innerText = labelMap[stage];
+    };
+
+    window.setThresholdLevel = function(level, btnElem) {
+      currentThreshLevel = level;
+      slideIndicator('threshSegmentTrack', 'threshGlider', btnElem);
+
+      document.querySelectorAll('#threshSegmentTrack button').forEach(b => {
+        b.classList.remove('text-white');
+        b.classList.add('text-slate-600');
+      });
+      btnElem.classList.remove('text-slate-600');
+      btnElem.classList.add('text-white');
+
+      const descMap = { 
+        'low': 'High Sensitivity (Low)', 
+        'mid': 'Optimal Threshold', 
+        'high': 'Strict (Noise Rejection)', 
+        'adapt': 'Adaptive Dynamic Floor' 
+      };
+      document.getElementById('threshDescText').innerText = descMap[level] || 'Optimal Threshold';
+    };
+
+    window.setGain = function(val, btnElem) {
+      currentGain = val;
+      slideIndicator('gainSegmentTrack', 'gainGlider', btnElem);
+
+      document.querySelectorAll('#gainSegmentTrack button').forEach(b => {
+        b.classList.remove('text-slate-950');
+        b.classList.add('text-white');
+      });
+      btnElem.classList.remove('text-white');
+      btnElem.classList.add('text-slate-950');
+    };
+
+    window.toggleAudio = function() {
+      audioEnabled = !audioEnabled;
+      const text = document.getElementById('audioText');
+      const icon = document.getElementById('audioIcon');
+      if (audioEnabled) {
+        text.innerText = "BEEP ON"; icon.setAttribute("data-lucide", "volume-2"); playBeep();
+      } else {
+        text.innerText = "MUTE"; icon.setAttribute("data-lucide", "volume-x");
+      }
+      lucide.createIcons();
+    };
+
+    window.togglePause = function() {
+      isPaused = !isPaused;
+      const text = document.getElementById('pauseText');
+      const icon = document.getElementById('pauseIcon');
+      if (isPaused) {
+        text.innerText = "RESUME"; icon.setAttribute("data-lucide", "play");
+      } else {
+        text.innerText = "FREEZE"; icon.setAttribute("data-lucide", "pause");
+      }
+      lucide.createIcons();
+    };
+
+    window.clearWaveform = function() {
+      ecgBuffer.fill(2048); detectorBuffer.fill(0); sampleCount = 0; sampleCountText.innerText = "SAMPLES: 0";
+    };
+
+    const gains = [5, 10, 20];
+    window.toggleVoltageGain = function() {
+      gIdx = (gIdx + 1) % gains.length;
+      document.getElementById('voltGainVal').innerText = gains[gIdx] + ' mm/mV';
+    };
+
+    const speeds = [25, 50];
+    window.toggleSweepSpeed = function() {
+      sIdx = (sIdx + 1) % speeds.length;
+      document.getElementById('sweepSpeedVal').innerText = speeds[sIdx] + ' mm/s';
+    };
+  </script>
+</body>
+</html>
