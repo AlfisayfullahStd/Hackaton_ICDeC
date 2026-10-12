@@ -1,0 +1,19 @@
+record,raw_diagnosis,label
+patient104/s0306lre,Healthy control,Normal
+patient117/s0291lre,Healthy control,Normal
+patient117/s0292lre,Healthy control,Normal
+patient121/s0311lre,Healthy control,Normal
+patient122/s0312lre,Healthy control,Normal
+patient131/s0273lre,Healthy control,Normal
+patient001/s0010_re,Myocardial infarction,Infark Miokard
+patient120/s0331lre,Myocardial infarction,Infark Miokard
+patient128/s0182_re,Myocardial infarction,Infark Miokard
+patient135/s0334lre,Myocardial infarction,Infark Miokard
+patient138/s0005_re,Myocardial infarction,Infark Miokard
+patient139/s0223_re,Myocardial infarction,Infark Miokard
+patient118/s0183_re,Heart failure (NYHA 3),Unknown
+patient119/s0001_re,n/a,Unknown
+patient123/s0224_re,Heart failure (NYHA 4),Unknown
+patient125/s0006_re,n/a,Unknown
+patient126/s0154_re,Palpitation,Unknown
+patient285/s0544_re,n/a,Unknown
